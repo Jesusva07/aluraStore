@@ -2,7 +2,7 @@
 Análisis de eficiencia para Alura Store
 Determina qué tienda recomendar para vender basado en métricas de desempeño.
 """
-
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -49,4 +49,63 @@ print("\n⭐ Calificación promedio por tienda (1-5):")
 for nombre, df in tiendas.items():
     promedio = df['Calificación'].mean().round(2)  # Redondeo a 2 decimales
     print(f"{nombre}: {promedio}/5")
+
+for nombre, df in tiendas.items():
+    # 1. Agrupar por producto y sumar cantidades vendidas
+    ventas_por_producto = df.groupby('Producto')['Cantidad de cuotas'].sum().sort_values(ascending=False)
+    
+    # 2. Identificar top y peor producto
+    top_producto = ventas_por_producto.idxmax()
+    top_ventas = ventas_por_producto.max()
+    peor_producto = ventas_por_producto.idxmin()
+    peor_ventas = ventas_por_producto.min()
+    
+    print(f"\n📌 {nombre}:")
+    print(f"   🏆 TOP: '{top_producto}' ({top_ventas} unidades)")
+    print(f"   🔻 PEOR: '{peor_producto}' ({peor_ventas} unidades)")
+
+    # 3. Gráfico de los 10 productos más vendidos
+    ventas_por_producto.head(10).plot(
+        kind='barh', 
+        color='#2ecc71',
+        title=f'Top 10 Productos - {nombre}'
+    )
+    plt.xlabel('Unidades Vendidas')
+    plt.tight_layout()
+    plt.show()
+
+print("\n🚚 Costo promedio de envío por tienda:")
+for nombre, df in tiendas.items():
+    costo_promedio = df['Costo de envío'].mean().round(2)  # Redondeado a 2 decimales
+    print(f"  {nombre}: ${costo_promedio}")
+
+# Opcional: Gráfico de costos
+costos = [df['Costo de envío'].mean() for df in tiendas.values()]
+nombres = list(tiendas.keys())
+
+plt.bar(nombres, costos, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'])
+plt.title('Costo Promedio de Envío por Tienda')
+plt.ylabel('Costo ($)')
+plt.xlabel('Tienda')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+import seaborn as sns  # Si no lo tienes: pip install seaborn
+
+# Preparar datos
+datos_envios = pd.concat([
+    tienda1.assign(Tienda='Tienda 1'),
+    tienda2.assign(Tienda='Tienda 2'),
+    tienda3.assign(Tienda='Tienda 3'),
+    tienda4.assign(Tienda='Tienda 4')
+])
+
+
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Tienda', y='Costo de envío', data=datos_envios, palette='pastel')
+plt.title('Distribución de Costos de Envío por Tienda')
+plt.xlabel('Tienda')
+plt.ylabel('Costo ($)')
+plt.grid(axis='y', linestyle='--')
+plt.show()
 
